@@ -3,11 +3,18 @@ import java.util.Date;
 import java.util.List;
 
 class DBManager {
+
+    private static final double COMMISSION_RATE = 0.10;
+
     private Transaction currentTransaction;
     private ProducerBank connectedProducerBank;
 
     public void setConnectedProducerBank(ProducerBank bank) {
         this.connectedProducerBank = bank;
+    }
+
+    public void setCurrentTransaction(Transaction tx) {
+        this.currentTransaction = tx;
     }
 
     public List<Transaction> retrieveCompletedTransactions() {
@@ -21,8 +28,8 @@ class DBManager {
         System.out.println("[DBManager] DB: Ανάκτηση δεδομένων εκκαθάρισης για Settlement ID: " + settlementId);
         if (currentTransaction != null) {
             double amount = currentTransaction.getAmount();
-            double comm = amount * 0.10;
-            return new Settlement(settlementId, amount, comm, amount - comm, "Pending");
+            double commission = amount * COMMISSION_RATE;
+            return new Settlement(settlementId, amount, commission, amount - commission, "Pending");
         }
         return new Settlement(settlementId, 250.0, 25.0, 225.0, "Pending");
     }
@@ -38,6 +45,11 @@ class DBManager {
 
     public void updateSettlement(Settlement settlement) {
         System.out.println("[DBManager] DB: Ενημέρωση κατάστασης εκκαθάρισης σε: " + settlement.getStatus());
+        
+        if (currentTransaction == null) {
+            return;
+        }
+
         if (currentTransaction != null && "Settled".equals(settlement.getStatus())) {
             currentTransaction.setStatus("Εκκαθαρισμένη");
             System.out.println("[DBManager] DB: Η κατάσταση της Συναλλαγής " + currentTransaction.getTransactionId() + " άλλαξε σε: 'Εκκαθαρισμένη'");
@@ -49,9 +61,5 @@ class DBManager {
 
     public void orderCancellation(int orderId) {
         System.out.println("[DBManager] DB: Ακύρωση παραγγελίας με Order ID: " + orderId + " λόγω ελλιπών στοιχείων.");
-    }
-
-    public void setCurrentTransaction(Transaction tx) {
-        this.currentTransaction = tx;
     }
 }
