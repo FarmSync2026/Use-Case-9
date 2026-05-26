@@ -3,6 +3,9 @@ import java.util.Date;
 import java.util.List;
 
 class ManageSearchClass {
+
+    private static final double COMMISSION_RATE = 0.10;
+
     private DBManager dbManager;
     private ProducerBank producerBank;
 
@@ -17,14 +20,15 @@ class ManageSearchClass {
 
     public List<Settlement> searchSettlements(int orderId) {
         System.out.println("[ManageSearchClass] Controller: Αναζήτηση εκκαθαρίσεων για Order ID: " + orderId);
-        List<Transaction> txList = dbManager.retrieveCompletedTransactions();
+        List<Transaction> transactionList = dbManager.retrieveCompletedTransactions();
         List<Settlement> settlements = new ArrayList<>();
         
-        for (Transaction tx : txList) {
-            dbManager.setCurrentTransaction(tx);
-            double amount = tx.getAmount();
-            double comm = amount * 0.10;
-            Settlement s = new Settlement(tx.getTransactionId() + 100, amount, comm, amount - comm, "Pending");
+        for (Transaction transaction : transactionList) {
+            dbManager.setCurrentTransaction(transaction);
+            double amount = transaction.getAmount();
+            double commission = amount * COMMISSION_RATE;
+            double producerAmount = amount - commission;
+            Settlement s = new Settlement(transaction  .getTransactionId() + 100, amount, commission, producerAmount, "Pending");
             settlements.add(s);
         }
         return settlements;
@@ -33,9 +37,9 @@ class ManageSearchClass {
     public void startSettlement(int settlementId) {
         System.out.println("[ManageSearchClass] Controller: Εκκίνηση εκκαθάρισης για Settlement ID: " + settlementId);
 
-        List<Transaction> txList = dbManager.retrieveCompletedTransactions();
-        if (!txList.isEmpty()) {
-            dbManager.setCurrentTransaction(txList.get(0));
+        List<Transaction> transactionList = dbManager.retrieveCompletedTransactions();
+        if (!transactionList.isEmpty()) {
+            dbManager.setCurrentTransaction(transactionList.get(0));
         }
 
         Settlement settlement = dbManager.retrieveSettlementData(settlementId);
