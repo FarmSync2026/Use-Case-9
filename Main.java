@@ -1,4 +1,4 @@
-public class FarmSyncUseCase9 {
+public class Main {
     public static void main(String[] args) {
         System.out.println("=========================================================================");
         System.out.println("FARMSYNC SYSTEM - RUNNING USE CASE 9");
